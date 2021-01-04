@@ -48,7 +48,7 @@ def SignIn(signInJson, repeat=0):
     if(res.json()['meta']['code'] == 6666):
         print(signInJson['mainTable']['personName'] + "打卡成功！", end='\t')
         print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    else:
+    elif(res.json()['meta']['code'] != 1111):
         repeat = repeat+1
         # 重试超过五次，停止打卡
         if(repeat == 5):
