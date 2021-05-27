@@ -2,7 +2,6 @@ import json
 import time
 import pip._vendor.requests
 from base64 import b64encode
-# 由于密码加密要用到crytop，需要pip3安装下面这个
 # https://pycryptodome.readthedocs.io/en/latest/src/api.html
 # Crypto使用文档
 from Crypto.Cipher import AES
@@ -70,7 +69,10 @@ def GetJNUID(username, password):
 
     res = Request(UrlLogin, logInParam)
     res = res.json()
-    return res["data"]["jnuid"]
+    if(res["meta"]["code"] == 500):
+        return None
+    else:
+        return res["data"]["jnuid"]
 
 
 # 加密密码
@@ -116,6 +118,8 @@ def GetInfo(jnuid):
     mainTable['collegeName'] = data['yxsmc']
     # 专业
     mainTable['professionName'] = data['zy']
+    # 家庭所在地区
+    mainTable['inChina'] = '1'
 
     # 删除空白的key
     for k in list(mainTable.keys()):
@@ -131,17 +135,36 @@ def GetInfo(jnuid):
     signInJson = {
         "mainTable": mainTable, "jnuid": jnuid
     }
+    if('secondTable' in data):
+        secondTable = data['secondTable']
+        # 删除空白的key
+        if(len(secondTable)!=0):
+            for k in list(secondTable.keys()):
+                if not secondTable.get(k):
+                    del secondTable[k]
+            del secondTable['mainId']
+            del secondTable['id']
+        signInJson.update({'secondTable': secondTable})
 
     return signInJson
+
 
 # 主程序
 
 
 def main(username, password):
     junid = GetJNUID(username, password)
-    signInJson = GetInfo(junid)
-    SignIn(signInJson)
+    if(junid == None):
+        print(username+" 密码错误！")
+    else:
+        signInJson = GetInfo(junid)
+        SignIn(signInJson)
 
+
+account = {
+    '学号': '密码'
+}
 
 if __name__ == '__main__':
-    main(学号, 密码)
+    for k, v in account.items():
+        main(k, v)
